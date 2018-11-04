@@ -1,6 +1,15 @@
 
-# Created by https://www.gitignore.io/api/java,maven,intellij
-# Edit at https://www.gitignore.io/?templates=java,maven,intellij
+# Created by https://www.gitignore.io/api/java,maven,intellij,database
+# Edit at https://www.gitignore.io/?templates=java,maven,intellij,database
+
+### Database ###
+*.accdb
+*.db
+*.dbf
+*.mdb
+*.pdb
+*.sql
+*.sqlite3
 
 ### Intellij ###
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio and WebStorm
@@ -118,4 +127,4 @@ buildNumber.properties
 .mvn/timing.properties
 .mvn/wrapper/maven-wrapper.jar
 
-# End of https://www.gitignore.io/api/java,maven,intellij
+# End of https://www.gitignore.io/api/java,maven,intellij,database
