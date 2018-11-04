@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.jfoenix.controls.JFXButton?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+
+
+<AnchorPane prefHeight="400.0" prefWidth="850.0" xmlns="http://javafx.com/javafx/8.0.191"
+            xmlns:fx="http://javafx.com/fxml/1" fx:controller="University.Controllers.SenderController">
+    <JFXButton layoutX="511.0" layoutY="360.0" onAction="#toSentAction" text="Отправить"/>
+    <JFXButton layoutX="431.0" layoutY="360.0" onAction="#cancelAction" text="Отменить"/>
+    <TextArea fx:id="message_area" layoutX="13.0" layoutY="119.0" prefHeight="229.0" prefWidth="575.0"
+              promptText="Введите текст сообщения"/>
+    <ListView fx:id="list_files" layoutX="601.0" layoutY="69.0" prefHeight="280.0" prefWidth="235.0"/>
+    <Label layoutX="601.0" layoutY="23.0" text="Файлы"/>
+    <TextField fx:id="to_whom" layoutX="14.0" layoutY="19.0" prefHeight="25.0" prefWidth="575.0" promptText="Кому"/>
+    <TextField fx:id="subject_message" layoutX="14.0" layoutY="69.0" prefHeight="25.0" prefWidth="575.0"
+               promptText="Тема сообщения"/>
+    <Label fx:id="lbl_files_info" layoutX="601.0" layoutY="364.0" prefHeight="17.0" prefWidth="235.0"
+           text="12 файлов 15 МБ"/>
+</AnchorPane>
