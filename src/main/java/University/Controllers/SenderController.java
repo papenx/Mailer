@@ -43,6 +43,7 @@ public class SenderController implements Initializable {
     private Label lbl_files_info;
 
     private long size;
+
     private static final Pattern VALID_EMAIL_ADDRESS_REGEX =
             Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
 
@@ -70,9 +71,13 @@ public class SenderController implements Initializable {
                 validateEmails.add(email);
         }
 
-        if(validateEmails.size() != 0){
+        if (validateEmails.size() != 0 && !message_area.getText().equals("") && !subject_message.getText().equals("")
+                && message_area.getText().getBytes().length <= MailServiceFeatures.MAX_LETTER_SIZE_BYTES) {
             Sender sender = new Sender("rodion-belovitskiy@rambler.ru", "rodionbelovitskiy", true, MailServers.RAMBLER);
-            sender.sendMessageWithAttachments(subject_message.getText(), message_area.getText(), to_whom.getText(), "rodion-belovitskiy@rambler.ru", observableFileList);
+            validateEmails.forEach(validateEmail -> sender.sendMessageWithAttachments(subject_message.getText(), message_area.getText(), validateEmail, "rodion-belovitskiy@rambler.ru", observableFileList));
+
+            Stage stage = (Stage) ((Node) actionEvent.getSource()).getScene().getWindow();
+            stage.close();
         }
     }
 
@@ -87,7 +92,7 @@ public class SenderController implements Initializable {
         setFilesSize();
     }
 
-    private List<FileInfo> deleteDuplicateFiles(Stage stage){
+    private List<FileInfo> deleteDuplicateFiles(Stage stage) {
         //Удаляем дубликаты
         List<FileInfo> list = getMultiFiles(stage);
         List<FileInfo> listFiltered = new ArrayList<>();

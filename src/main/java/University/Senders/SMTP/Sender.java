@@ -1,6 +1,7 @@
 package University.Senders.SMTP;
 
 import University.Info.MailServers;
+import University.Models.FileInfo;
 
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
@@ -61,7 +62,7 @@ public class Sender {
         }
     }
 
-    public void sendMessageWithAttachments(String subject, String content, String fromEmail, String toEmail, List<File> files) {
+    public void sendMessageWithAttachments(String subject, String content, String fromEmail, String toEmail, List<FileInfo> files) {
         Session session = getSession();
 
         try {
@@ -73,9 +74,10 @@ public class Sender {
             bodyPart.setContent(content, "text/html; charset=UTF-8");
             multipart.addBodyPart(bodyPart);
 
-            for (File file : files) {
-                if (file.exists())
-                    addAttachment(multipart, file);
+            for (FileInfo file : files) {
+                File file_temp = new File(file.getPath());
+                if (file_temp.exists())
+                    addAttachment(multipart, file_temp);
             }
             message.setContent(multipart);
 
