@@ -46,11 +46,11 @@ public class MainController implements Initializable {
         else
             statusInternetShape.setFill(Color.ORANGERED);
 
-        Receiver receiver = new Receiver("rodion-belovitskiy@rambler.ru", "rodionbelovitskiy", MailServers.RAMBLER);
-        messagesList.addAll(receiver.checkMessages());
-
-        createTable(tableMessages);
-        tableMessages.setItems(messagesList);
+//        Receiver receiver = new Receiver("rodion-belovitskiy@rambler.ru", "rodionbelovitskiy", MailServers.RAMBLER);
+//        messagesList.addAll(receiver.checkMessages());
+//
+//        createTable(tableMessages);
+//        tableMessages.setItems(messagesList);
     }
 
     @FXML

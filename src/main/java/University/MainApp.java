@@ -3,6 +3,9 @@ package University;
 import University.Info.MailServers;
 import University.Receivers.IMAP.Receiver;
 import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 public class MainApp extends Application {
@@ -43,17 +46,16 @@ public class MainApp extends Application {
     public void start(Stage primaryStage) throws Exception {
 //        Receiver receiver1 = new Receiver("rodion-belovitskiy@rambler.ru", "rodionbelovitskiy", MailServers.RAMBLER);
 //        receiver1.checkMessages();
-        Receiver receiver2 = new Receiver("majorkik.tm@gmail.com", "rodion97king16", MailServers.GMAIL);
-        receiver2.checkMessages();
+//        Receiver receiver2 = new Receiver("majorkik.tm@gmail.com", "rodion97king16", MailServers.GMAIL);
+//        receiver2.checkMessages();
 
-        System.exit(1);
-//        Parent root = FXMLLoader.load(getClass().getResource("/FXML/MainForm.fxml"));
-//
-//        Scene scene = new Scene(root);
-//
-//        primaryStage.setTitle("Mail client Belovitskiy Rodion Pi15-a");
-//        primaryStage.setScene(scene);
-//        primaryStage.show();
+        Parent root = FXMLLoader.load(getClass().getResource("/FXML/MainForm.fxml"));
+
+        Scene scene = new Scene(root);
+
+        primaryStage.setTitle("Mail client Belovitskiy Rodion Pi15-a");
+        primaryStage.setScene(scene);
+        primaryStage.show();
     }
 }
 

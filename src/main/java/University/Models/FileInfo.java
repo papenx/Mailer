@@ -1,11 +1,21 @@
 package University.Models;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
+import java.io.File;
 import java.text.DecimalFormat;
 
-public class FileInfo {
+public class FileInfo{
     private String fileName;
     private String path;
-    private int size;
+    private long size;
+
+    public FileInfo(File file) {
+        fileName = file.getName();
+        path = file.getAbsolutePath();
+        size = file.length();
+    }
 
     public String getFileName() {
         return fileName;
@@ -23,25 +33,43 @@ public class FileInfo {
         this.path = path;
     }
 
-    public int getSize() {
+    public long getSize() {
         return size;
     }
 
-    public void setSize(int size) {
+    public void setSize(long size) {
         this.size = size;
     }
 
     @Override
-    public String toString() {
-        String hrSize;
-        double m = size/1024.0;
-        DecimalFormat dec = new DecimalFormat("0.00");
+    public boolean equals(Object o) {
+        if (this == o) return true;
 
-        if (m > 1) {
-            hrSize = dec.format(m).concat(" MB");
-        } else {
-            hrSize = dec.format(size).concat(" KB");
-        }
-        return fileName + "   " + hrSize;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        FileInfo fileInfo = (FileInfo) o;
+
+        return new EqualsBuilder()
+                .append(size, fileInfo.size)
+                .append(fileName, fileInfo.fileName)
+                .append(path, fileInfo.path)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37)
+                .append(fileName)
+                .append(path)
+                .append(size)
+                .toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        if(size <= 0) return "0";
+        final String[] units = new String[] { "B", "kB", "MB", "GB", "TB" };
+        int digitGroups = (int) (Math.log10(size)/Math.log10(1024));
+        return fileName + " " + new DecimalFormat("#,##0.#").format(size/Math.pow(1024, digitGroups)) + " " + units[digitGroups];
     }
 }
