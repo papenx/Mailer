@@ -1,17 +1,9 @@
 package University;
 
 import University.Info.MailServers;
-import University.Receivers.POP3.Receiver;
-import University.Senders.SMTP.Sender;
+import University.Receivers.IMAP.Receiver;
 import javafx.application.Application;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.stage.Stage;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 
 public class MainApp extends Application {
 //    public static void main(String... args) {
@@ -49,17 +41,19 @@ public class MainApp extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-//        Receiver receiver = new Receiver("rodion-belovitskiy@rambler.ru", "rodionbelovitskiy", MailServers.RAMBLER);
+//        Receiver receiver1 = new Receiver("rodion-belovitskiy@rambler.ru", "rodionbelovitskiy", MailServers.RAMBLER);
+//        receiver1.checkMessages();
+        Receiver receiver2 = new Receiver("majorkik.tm@gmail.com", "rodion97king16", MailServers.GMAIL);
+        receiver2.checkMessages();
+
+        System.exit(1);
+//        Parent root = FXMLLoader.load(getClass().getResource("/FXML/MainForm.fxml"));
 //
-//        receiver.check();
-
-        Parent root = FXMLLoader.load(getClass().getResource("/FXML/MainForm.fxml"));
-
-        Scene scene = new Scene(root);
-
-        primaryStage.setTitle("Mail client Belovitskiy Rodion Pi15-a");
-        primaryStage.setScene(scene);
-        primaryStage.show();
+//        Scene scene = new Scene(root);
+//
+//        primaryStage.setTitle("Mail client Belovitskiy Rodion Pi15-a");
+//        primaryStage.setScene(scene);
+//        primaryStage.show();
     }
 }
 

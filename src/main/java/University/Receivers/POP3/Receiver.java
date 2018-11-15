@@ -1,22 +1,20 @@
 package University.Receivers.POP3;
 
 import University.Info.MailServers;
-import University.Models.MailMessage;
+import University.Models.MessageHeadline;
 
 import javax.mail.*;
-import javax.mail.internet.MimeMultipart;
+import javax.mail.internet.MimeUtility;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Receiver {
-    private static final Logger logger = Logger.getLogger(University.Receivers.POP3.Receiver.class.getName());
+    private static final Logger logger = Logger.getLogger(Receiver.class.getName());
 
     private String username;
     private String password;
@@ -33,24 +31,32 @@ public class Receiver {
         try {
             properties.load(new FileInputStream(pathProperties));
 
-            Session session = Session.getDefaultInstance(properties);
+            Session session = Session.getInstance(properties);
 
             store = session.getStore("pop3s");
             store.connect(username, password);
         } catch (MessagingException | IOException e) {
             logger.log(Level.INFO, e.getMessage());
+            e.printStackTrace();
         }
     }
 
-    public List<MailMessage> check() {
-        List<MailMessage> messageList = new ArrayList<>();
+    public List<MessageHeadline> checkMessages() {
+        List<MessageHeadline> messageList = new ArrayList<>();
         try {
             Folder emailFolder = store.getFolder("INBOX");
             emailFolder.open(Folder.READ_ONLY);
-
             for (Message message : emailFolder.getMessages()) {
-                MailMessage mailMessage = new MailMessage(Arrays.toString(message.getFrom()), message.getSubject(), message.getSentDate());
-                messageList.add(mailMessage);
+
+                StringBuilder stringBuilder = new StringBuilder();
+                Address[] recipients = message.getRecipients(Message.RecipientType.TO);
+                for (Address address : recipients) {
+                    stringBuilder.append(decodeMailText(address.toString()) + " ");
+                }
+
+
+                MessageHeadline messageHeadline = new MessageHeadline(stringBuilder.toString(), message.getSubject(), message.getSentDate());
+                messageList.add(messageHeadline);
             }
 
             emailFolder.close(false);
@@ -73,6 +79,16 @@ public class Receiver {
             return "Gmail";
         else
             return "Rambler";
+    }
+
+    public String decodeMailText(String emailId) {
+        String string = emailId;
+        try {
+            string = MimeUtility.decodeText(emailId);
+        } catch (Exception e) {
+            logger.log(Level.INFO, e.getMessage());
+        }
+        return string;
     }
 
 }

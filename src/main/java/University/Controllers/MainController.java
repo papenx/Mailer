@@ -2,10 +2,9 @@ package University.Controllers;
 
 import University.Info.MailServers;
 import University.Models.FileInfo;
-import University.Models.MailMessage;
+import University.Models.MessageHeadline;
 import University.Receivers.POP3.Receiver;
 import University.Settings.SettingsApp;
-import com.jfoenix.controls.JFXListView;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -18,13 +17,11 @@ import javafx.scene.Scene;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
-import javax.mail.Message;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Date;
@@ -32,36 +29,28 @@ import java.util.ResourceBundle;
 
 public class MainController implements Initializable {
     @FXML
-    private Circle cicrle_internet;
+    private Circle statusInternetShape;
 
     @FXML
     private ListView<FileInfo> usersList;
 
     @FXML
-    private TableView listLetters;
+    private TableView<MessageHeadline> tableMessages;
 
-    @FXML
-    private TableColumn<MailMessage, String> fromColumn;
-    private TableColumn<MailMessage, String> subjectColumn;
-    private TableColumn<MailMessage, Date> dateColumn;
-
-    private ObservableList<MailMessage> messagesList = FXCollections.observableArrayList();
+    private ObservableList<MessageHeadline> messagesList = FXCollections.observableArrayList();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         if(SettingsApp.getInstance().isOnline())
-            cicrle_internet.setFill(Color.GREENYELLOW);
+            statusInternetShape.setFill(Color.GREENYELLOW);
         else
-            cicrle_internet.setFill(Color.ORANGERED);
+            statusInternetShape.setFill(Color.ORANGERED);
 
         Receiver receiver = new Receiver("rodion-belovitskiy@rambler.ru", "rodionbelovitskiy", MailServers.RAMBLER);
-        messagesList.addAll(receiver.check());
+        messagesList.addAll(receiver.checkMessages());
 
-        fromColumn.setCellValueFactory(new PropertyValueFactory<>("from"));
-        subjectColumn.setCellValueFactory(new PropertyValueFactory<>("subject"));
-        dateColumn.setCellValueFactory(new PropertyValueFactory<>("date"));
-
-        listLetters.setItems(messagesList);
+        createTable(tableMessages);
+        tableMessages.setItems(messagesList);
     }
 
     @FXML
@@ -103,6 +92,23 @@ public class MainController implements Initializable {
     @FXML
     void settingsAction(ActionEvent event) {
 
+    }
+
+    private void createTable(TableView table) {
+
+        TableColumn<MessageHeadline, String> fromColumn = new TableColumn<>("from");
+        fromColumn.setCellValueFactory(param -> param.getValue().fromProperty());
+        fromColumn.setPrefWidth(150);
+
+        TableColumn<MessageHeadline, String> subjectColumn = new TableColumn<>("subject");
+        subjectColumn.setCellValueFactory(param -> param.getValue().subjectProperty());
+        subjectColumn.setPrefWidth(250);
+
+        TableColumn<MessageHeadline, Date> santDateColumn = new TableColumn<>("date");
+        santDateColumn.setCellValueFactory(param -> param.getValue().dateProperty());
+        santDateColumn.setPrefWidth(250);
+
+        table.getColumns().addAll(fromColumn, subjectColumn, santDateColumn);
     }
 
 }

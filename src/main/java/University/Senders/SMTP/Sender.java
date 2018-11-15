@@ -86,7 +86,7 @@ public class Sender {
     }
 
     private Session getSession() {
-        return Session.getDefaultInstance(properties, new Authenticator() {
+        return Session.getInstance(properties, new Authenticator() {
             protected PasswordAuthentication getPasswordAuthentication() {
                 return new PasswordAuthentication(username, password);
             }
