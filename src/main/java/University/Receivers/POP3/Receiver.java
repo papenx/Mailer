@@ -50,12 +50,12 @@ public class Receiver {
 
                 StringBuilder stringBuilder = new StringBuilder();
                 Address[] recipients = message.getRecipients(Message.RecipientType.TO);
+
                 for (Address address : recipients) {
                     stringBuilder.append(decodeMailText(address.toString()) + " ");
                 }
 
-
-                MessageHeadline messageHeadline = new MessageHeadline(stringBuilder.toString(), message.getSubject(), message.getSentDate());
+                MessageHeadline messageHeadline = new MessageHeadline(stringBuilder.toString(), message.getSubject(), message.getSentDate(), message.getMessageNumber());
                 messageList.add(messageHeadline);
             }
 

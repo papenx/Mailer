@@ -11,11 +11,13 @@ public class MessageHeadline {
     private StringProperty from;
     private StringProperty subject;
     private ObjectProperty<Date> date;
+    private int messageNum;
 
-    public MessageHeadline(String from, String subject, Date date) {
+    public MessageHeadline(String from, String subject, Date date, int messageNum) {
         this.from = new SimpleStringProperty(from);
         this.subject = new SimpleStringProperty(subject);
         this.date = new SimpleObjectProperty<>(date);
+        this.messageNum = messageNum;
     }
 
     public String getFrom() {
@@ -52,5 +54,13 @@ public class MessageHeadline {
 
     public void setDate(Date date) {
         this.date.set(date);
+    }
+
+    public int getMessageNum() {
+        return messageNum;
+    }
+
+    public void setMessageNum(int messageNum) {
+        this.messageNum = messageNum;
     }
 }

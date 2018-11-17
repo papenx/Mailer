@@ -1,5 +1,6 @@
 package University;
 
+import University.Info.FolderType;
 import University.Info.MailServers;
 import University.Receivers.IMAP.Receiver;
 import javafx.application.Application;
@@ -45,7 +46,7 @@ public class MainApp extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
 //        Receiver receiver1 = new Receiver("rodion-belovitskiy@rambler.ru", "rodionbelovitskiy", MailServers.RAMBLER);
-//        receiver1.checkMessages();
+//        receiver1.checkMessages(FolderType.INBOX);
 //        Receiver receiver2 = new Receiver("majorkik.tm@gmail.com", "rodion97king16", MailServers.GMAIL);
 //        receiver2.checkMessages();
 
