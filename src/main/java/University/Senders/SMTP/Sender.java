@@ -16,6 +16,8 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static University.Services.MailUtility.getNameMailServer;
+
 public class Sender {
     private static final Logger logger = Logger.getLogger(University.Senders.SMTP.Sender.class.getName());
 
@@ -45,7 +47,7 @@ public class Sender {
         }
     }
 
-    public void sendMessage(String subject, String content, String fromEmail, String toEmail) {
+    public void sendMessage(String subject, String content, String toEmail, String fromEmail) {
         Session session = getSession();
 
         try {
@@ -103,7 +105,7 @@ public class Sender {
         multipart.addBodyPart(messageBodyPart);
     }
 
-    private Message setMessage(Session session, String subject, String fromEmail, String toEmail) throws MessagingException {
+    private Message setMessage(Session session, String subject, String toEmail, String fromEmail) throws MessagingException {
         Message message = new MimeMessage(session);
         message.setFrom(new InternetAddress(fromEmail));
         message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail));
@@ -112,21 +114,23 @@ public class Sender {
     }
 
     private String getPathProperties(boolean tls, MailServers mailServers){
-        return "Properties/" +
-                getNameMailServer(mailServers) +
-                "/SMTP/" +
-                isTLS(tls) +
-                ".properties";
+        return String.format("Properties/%s/SMTP/%s.properties", getNameMailServer(mailServers) , isTLS(tls));
     }
 
     private String isTLS(boolean tls){
         return tls ? "TLS" : "SSL";
     }
 
-    private String getNameMailServer(MailServers mailServers){
-        if(mailServers == MailServers.GMAIL)
-            return "Gmail";
-        else
-            return "Rambler";
+    public boolean isConnected(){
+        try {
+            Session session = getSession();
+            Transport transport = session.getTransport("smtp");
+            transport.connect();
+            boolean isConnected = transport.isConnected();
+            transport.close();
+            return isConnected;
+        } catch (MessagingException e) {
+            return false;
+        }
     }
 }

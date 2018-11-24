@@ -5,7 +5,12 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
+import javax.mail.Message;
+import javax.mail.MessagingException;
 import java.util.Date;
+
+import static University.Services.MailUtility.decodeMailText;
+import static University.Services.MailUtility.decodeRecepitntsText;
 
 public class MessageHeadline {
     private StringProperty from;
@@ -18,6 +23,15 @@ public class MessageHeadline {
         this.subject = new SimpleStringProperty(subject);
         this.date = new SimpleObjectProperty<>(date);
         this.messageNum = messageNum;
+    }
+
+    public MessageHeadline(Message message) throws MessagingException {
+        String recipients = decodeRecepitntsText(message.getRecipients(Message.RecipientType.TO));
+        String subj = decodeMailText(message.getSubject());
+        from = new SimpleStringProperty(recipients);
+        subject = new SimpleStringProperty(subj);
+        date = new SimpleObjectProperty<>(message.getSentDate());
+        messageNum = message.getMessageNumber();
     }
 
     public String getFrom() {

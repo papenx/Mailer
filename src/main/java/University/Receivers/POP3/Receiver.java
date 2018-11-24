@@ -13,6 +13,9 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static University.Services.MailUtility.decodeMailText;
+import static University.Services.MailUtility.getNameMailServer;
+
 public class Receiver {
     private static final Logger logger = Logger.getLogger(Receiver.class.getName());
 
@@ -52,10 +55,15 @@ public class Receiver {
                 Address[] recipients = message.getRecipients(Message.RecipientType.TO);
 
                 for (Address address : recipients) {
-                    stringBuilder.append(decodeMailText(address.toString()) + " ");
+                    stringBuilder.append(decodeMailText(address.toString())).append(" ");
                 }
 
-                MessageHeadline messageHeadline = new MessageHeadline(stringBuilder.toString(), message.getSubject(), message.getSentDate(), message.getMessageNumber());
+                MessageHeadline messageHeadline = new MessageHeadline(
+                        stringBuilder.toString(),
+                        message.getSubject(),
+                        message.getSentDate(),
+                        message.getMessageNumber()
+                );
                 messageList.add(messageHeadline);
             }
 
@@ -69,26 +77,7 @@ public class Receiver {
     }
 
     private String getPathProperties(MailServers mailServers) {
-        return "Properties/" +
-                getNameMailServer(mailServers) +
-                "/POP3/POP3.properties";
-    }
-
-    private String getNameMailServer(MailServers mailServers) {
-        if (mailServers == MailServers.GMAIL)
-            return "Gmail";
-        else
-            return "Rambler";
-    }
-
-    public String decodeMailText(String emailId) {
-        String string = emailId;
-        try {
-            string = MimeUtility.decodeText(emailId);
-        } catch (Exception e) {
-            logger.log(Level.INFO, e.getMessage());
-        }
-        return string;
+        return String.format("Properties/%s/POP3/POP3.properties", getNameMailServer(mailServers));
     }
 
 }

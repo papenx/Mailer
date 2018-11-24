@@ -2,6 +2,7 @@ package University;
 
 import University.Info.FolderType;
 import University.Info.MailServers;
+import University.LocalStoreProvider.MStorUtility;
 import University.Receivers.IMAP.Receiver;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -18,7 +19,6 @@ public class MainApp extends Application {
 //        senderSSl.sendMessage("По поводу работы",
 //                "Завтра явится на работу в 8:00 С Уважение администрация Сайта google.com",
 //                "rodion-belovitskiy@rambler.ru", "rodion-belovitskiy@rambler.ru");
-
 //        List<File> files = new ArrayList<>();
 //
 //        files.add(new File("C:/Rodion/Projects/MailClientKurs/src/main/resources/Properties/Rambler/MailServers/SSL.properties"));
@@ -49,6 +49,8 @@ public class MainApp extends Application {
 //        receiver1.checkMessages(FolderType.INBOX);
 //        Receiver receiver2 = new Receiver("majorkik.tm@gmail.com", "rodion97king16", MailServers.GMAIL);
 //        receiver2.checkMessages();
+
+//        MStorUtility mStorUtility = new MStorUtility();
 
         Parent root = FXMLLoader.load(getClass().getResource("/FXML/MainForm.fxml"));
 

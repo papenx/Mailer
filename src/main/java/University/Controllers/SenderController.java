@@ -3,32 +3,31 @@ package University.Controllers;
 import University.Info.MailServers;
 import University.Info.MailServiceFeatures;
 import University.Models.FileInfo;
+import University.Models.User;
 import University.Senders.SMTP.Sender;
-import University.Services.FileHelper;
+import University.Services.FileUtility;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.collections.ObservableSet;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Orientation;
 import javafx.scene.Node;
 import javafx.scene.control.*;
-import javafx.scene.input.MouseEvent;
+import javafx.scene.web.HTMLEditor;
 import javafx.stage.Stage;
 
-import java.io.File;
 import java.net.URL;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static University.Services.FileHelper.getMultiFiles;
+import static University.Services.FileUtility.getMultiFiles;
+import static University.Services.MailUtility.checkMailServers;
 
 public class SenderController implements Initializable {
     @FXML
-    private TextArea message_area;
+    private HTMLEditor content;
 
     @FXML
     private ListView<FileInfo> listFiles;
@@ -48,6 +47,14 @@ public class SenderController implements Initializable {
             Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
 
     private ObservableList<FileInfo> observableFileList = FXCollections.observableArrayList();
+
+    private Sender sender;
+    private String from;
+
+    public void init(User user){
+        from = user.getUsername();
+        sender = new Sender(from, user.getPassword(), true, checkMailServers(from));
+    }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -71,11 +78,12 @@ public class SenderController implements Initializable {
                 validateEmails.add(email);
         }
 
-        if (validateEmails.size() != 0 && !message_area.getText().equals("") && !subject_message.getText().equals("")
-                && message_area.getText().getBytes().length <= MailServiceFeatures.MAX_LETTER_SIZE_BYTES) {
-            Sender sender = new Sender("rodion-belovitskiy@rambler.ru", "rodionbelovitskiy", true, MailServers.RAMBLER);
-            validateEmails.forEach(validateEmail -> sender.sendMessageWithAttachments(subject_message.getText(), message_area.getText(), validateEmail, "rodion-belovitskiy@rambler.ru", observableFileList));
-
+        if (validateEmails.size() != 0 && !content.getHtmlText().equals("") && !subject_message.getText().equals("")
+                && content.getHtmlText().getBytes().length <= MailServiceFeatures.MAX_LETTER_SIZE_BYTES) {
+            if (listFiles.getItems().size() != 0)
+                validateEmails.forEach(validateEmail -> sender.sendMessageWithAttachments(subject_message.getText(), content.getHtmlText(), validateEmail, from, observableFileList));
+            else
+                validateEmails.forEach(validateEmail -> sender.sendMessage(subject_message.getText(), content.getHtmlText(), validateEmail, from));
             Stage stage = (Stage) ((Node) actionEvent.getSource()).getScene().getWindow();
             stage.close();
         }
@@ -112,7 +120,7 @@ public class SenderController implements Initializable {
 
     private void setFilesSize() {
         size = observableFileList.stream().mapToLong(FileInfo::getSize).sum();
-        lbl_files_info.setText(String.format("Кол-во файлов : %s Размер : %s", observableFileList.size(), FileHelper.sizeFormatter(size)));
+        lbl_files_info.setText(String.format("Кол-во файлов : %s Размер : %s", observableFileList.size(), FileUtility.sizeFormatter(size)));
     }
 
     private static boolean validate(String emailStr) {
