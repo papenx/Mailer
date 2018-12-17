@@ -1,29 +1,38 @@
 package University.Controllers;
 
-import University.Info.MailServers;
-import University.Info.MailServiceFeatures;
+import University.Info.MailInfo;
 import University.Models.FileInfo;
 import University.Models.User;
-import University.Senders.SMTP.Sender;
-import University.Services.FileUtility;
+import University.SMTP.Sender;
+import University.Utilities.FileUtility;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Orientation;
 import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.web.HTMLEditor;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
+import org.apache.commons.io.FilenameUtils;
+import org.jsoup.helper.StringUtil;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static University.Services.FileUtility.getMultiFiles;
-import static University.Services.MailUtility.checkMailServers;
+import static University.Info.MailInfo.RSA_PUBLIC_KEY_EXT;
+import static University.Info.MailInfo.SIGNATURE_EXT;
+import static University.Utilities.FileUtility.getMultiFiles;
+import static University.Utilities.MailUtility.checkMailServers;
 
 public class SenderController implements Initializable {
     @FXML
@@ -51,7 +60,7 @@ public class SenderController implements Initializable {
     private Sender sender;
     private String from;
 
-    public void init(User user){
+    public void init(User user) {
         from = user.getUsername();
         sender = new Sender(from, user.getPassword(), true, checkMailServers(from));
     }
@@ -79,7 +88,7 @@ public class SenderController implements Initializable {
         }
 
         if (validateEmails.size() != 0 && !content.getHtmlText().equals("") && !subject_message.getText().equals("")
-                && content.getHtmlText().getBytes().length <= MailServiceFeatures.MAX_LETTER_SIZE_BYTES) {
+                && content.getHtmlText().getBytes().length <= MailInfo.MAX_LETTER_SIZE_BYTES) {
             if (listFiles.getItems().size() != 0)
                 validateEmails.forEach(validateEmail -> sender.sendMessageWithAttachments(subject_message.getText(), content.getHtmlText(), validateEmail, from, observableFileList));
             else
@@ -109,7 +118,7 @@ public class SenderController implements Initializable {
         //Удаляем файлы, если макс размер превышен
         long size_temp = size;
         for (FileInfo fileInfo : list) {
-            if (size_temp + fileInfo.getSize() <= MailServiceFeatures.MAX_FILES_SIZE_BYTES) {
+            if (size_temp + fileInfo.getSize() <= MailInfo.MAX_FILES_SIZE_BYTES) {
                 size_temp += fileInfo.getSize();
                 listFiltered.add(fileInfo);
             }
@@ -128,4 +137,31 @@ public class SenderController implements Initializable {
         return matcher.find();
     }
 
+    public void encAndSend(ActionEvent event) throws IOException {
+        Stage stage = new Stage();
+        FXMLLoader loader = new FXMLLoader(getClass().getResource(
+                "/FXML/EncryptionForm.fxml"));
+        Parent root = loader.load();
+        EncryptionController controller = loader.getController();
+        controller.init(from, content.getHtmlText());
+        stage.setScene(new Scene(root));
+        stage.setTitle("Зашифровать письмо");
+        stage.initModality(Modality.WINDOW_MODAL);
+        stage.initOwner(((Node) event.getSource()).getScene().getWindow());
+        stage.showAndWait();
+
+        content.setHtmlText(controller.getContent());
+        System.out.println("send" + content.getHtmlText().length());
+
+        addToListFilesRSA(controller.getPathToRSAPublicKey(), RSA_PUBLIC_KEY_EXT);
+        addToListFilesRSA(controller.getPathToSigFile(), SIGNATURE_EXT);
+    }
+
+    private void addToListFilesRSA(String path, String EXT) {
+        if (StringUtil.isBlank(path))
+            return;
+        File file = new File(FilenameUtils.removeExtension(path) + EXT);
+        if (file.exists() && file.isFile())
+            observableFileList.add(new FileInfo(file));
+    }
 }

@@ -1,42 +1,21 @@
-package University.Receivers.IMAP;
+package University.IMAP;
 
-import University.BQ.MessageConsumer;
-import University.BQ.MessageProducer;
-import University.BQ.ProducerChecker;
-import University.Info.FolderType;
-import University.Info.MailServers;
+import University.Enums.FolderType;
+import University.Enums.MailServers;
 import University.Models.MessageHeadline;
-import com.google.common.io.ByteStreams;
 import com.sun.mail.imap.IMAPFolder;
 import com.sun.mail.imap.IMAPSSLStore;
-import net.fortuna.mstor.MStorFolder;
-import net.fortuna.mstor.MStorStore;
 
 import javax.mail.*;
-import javax.mail.internet.MimeMessage;
-import javax.mail.search.FlagTerm;
 import javax.mail.search.MessageNumberTerm;
 import javax.mail.search.SearchTerm;
 import java.io.*;
-import java.nio.CharBuffer;
-import java.nio.MappedByteBuffer;
-import java.nio.channels.FileChannel;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.*;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.IntStream;
 
-import static University.Services.MailUtility.getFolder;
-import static University.Services.MailUtility.getNameMailServer;
-import static org.apache.camel.util.FileUtil.createNewFile;
+import static University.Utilities.MailUtility.getFolder;
+import static University.Utilities.MailUtility.getNameMailServer;
 
 public class Receiver {
     private static final Logger logger = Logger.getLogger(Receiver.class.getName());
@@ -69,7 +48,6 @@ public class Receiver {
             return folder.getMessages();
         } catch (MessagingException e) {
             logger.log(Level.INFO, e.getMessage());
-            e.printStackTrace();
         }
         return null;
     }

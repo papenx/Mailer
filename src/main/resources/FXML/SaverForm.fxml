@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.jfoenix.controls.JFXButton?>
+<?import com.jfoenix.controls.JFXTextArea?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane prefHeight="250.0" prefWidth="501.0" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="University.Controllers.SaverController">
+   <children>
+      <JFXTextArea fx:id="progress_area" layoutX="14.0" layoutY="14.0" prefHeight="200.0" prefWidth="464.0" />
+      <JFXButton onAction="#start" layoutX="220.0" layoutY="224.0" text="Начать" />
+   </children>
+</AnchorPane>

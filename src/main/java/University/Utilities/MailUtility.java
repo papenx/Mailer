@@ -1,8 +1,8 @@
-package University.Services;
+package University.Utilities;
 
-import University.Info.FolderType;
-import University.Info.MailServers;
-import University.Receivers.IMAP.Receiver;
+import University.Enums.FolderType;
+import University.Enums.MailServers;
+import University.IMAP.Receiver;
 import com.sun.mail.imap.IMAPFolder;
 import javafx.collections.ObservableList;
 
@@ -11,17 +11,33 @@ import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimeUtility;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import static University.Info.FolderType.*;
-import static University.Info.MailServiceFeatures.GMAIL_DOMEN;
+import static University.Enums.FolderType.*;
+import static University.Info.MailInfo.GMAIL_DOMEN;
+import static University.Info.MailInfo.YANDEX_DOMAINS;
 
 public class MailUtility {
     private static final Logger logger = Logger.getLogger(Receiver.class.getName());
     private static boolean textIsHtml;
+
+
+    public static boolean checkInternetConnect(){
+        try {
+            URL url = new URL("https://www.google.com/");
+            URLConnection connection = url.openConnection();
+            connection.connect();
+            return true;
+        }
+        catch (Exception e) {
+            return false;
+        }
+    }
 
     public static String decodeMailText(String text) {
         String decodeText = text;
@@ -57,7 +73,9 @@ public class MailUtility {
     }
 
     public static String getNameMailServer(MailServers mailServers) {
-        if (mailServers == MailServers.GMAIL)
+        if (mailServers == MailServers.YANDEX)
+            return "Yandex";
+        else if (mailServers == MailServers.GMAIL)
             return "Gmail";
         else
             return "Rambler";
@@ -94,7 +112,7 @@ public class MailUtility {
         String result = "";
         if (message.isMimeType("text/plain"))
             result = "<pre>" + message.getContent().toString() + "</pre>";
-        else if(message.isMimeType("text/html"))
+        else if (message.isMimeType("text/html"))
             result = message.getContent().toString();
         else if (message.isMimeType("multipart/alternative") || message.isMimeType("multipart/*"))
             result = getTextFromMimeMultipart((MimeMultipart) message.getContent(), list);
@@ -116,16 +134,16 @@ public class MailUtility {
                     String html = (String) bodyPart.getContent();
 //                    result.append(org.jsoup.Jsoup.parse(html).text()).append("\n");
                     result.append((String) bodyPart.getContent());
-                }else if (bodyPart.getContent() instanceof MimeMultipart) {
+                } else if (bodyPart.getContent() instanceof MimeMultipart) {
                     result.append(getTextFromMimeMultipart((MimeMultipart) bodyPart.getContent(), list));
-                }else if (bodyPart.isMimeType("text/plain")) {
+                } else if (bodyPart.isMimeType("text/plain")) {
 //                    result.append("<pre>").append(bodyPart.getContent()).append("\n").append("</pre>");
                     resultPlain = "<pre>" + bodyPart.getContent() + "\n" + "</pre>";
                 }
             }
         }
 
-        if(!textIsHtml){
+        if (!textIsHtml) {
             result.append(resultPlain);
         }
         return result.toString();
@@ -136,6 +154,9 @@ public class MailUtility {
         for (String gmailDoman : GMAIL_DOMEN) {
             if (gmailDoman.equals(text[1]))
                 return MailServers.GMAIL;
+            else if (Arrays.asList(YANDEX_DOMAINS).contains(text[1])) {
+                return MailServers.YANDEX;
+            }
         }
         return MailServers.RAMBLER;
     }

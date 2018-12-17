@@ -1,13 +1,15 @@
 package University.Controllers;
 
-import University.Info.FolderType;
-import University.Info.MailServers;
+import University.Encryption.DigitalSignatureEmail;
+import University.Encryption.RSA;
+import University.Enums.FolderType;
+import University.Enums.MailServers;
+import University.MStor.MStorUtility;
 import University.Models.MessageHeadline;
 import University.Models.User;
-import University.Receivers.IMAP.Receiver;
-import University.Settings.SettingsApp;
+import University.IMAP.Receiver;
+import University.Utilities.MailUtility;
 import com.jfoenix.controls.JFXSpinner;
-import com.sun.mail.imap.IMAPMessage;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -21,19 +23,31 @@ import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import org.apache.commons.io.FileUtils;
 
 import javax.mail.Message;
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Date;
+import java.util.Objects;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Stream;
 
-import static University.Info.FolderType.*;
-import static University.Services.MailUtility.checkMailServers;
+import static University.Enums.FolderType.*;
+import static University.Utilities.MailUtility.checkMailServers;
 
 public class MainController implements Initializable {
+    private static final Logger logger = Logger.getLogger(MainController.class.getName());
+
+    @FXML
+    private Button syncButton;
+
     @FXML
     private Button inbox;
 
@@ -64,6 +78,14 @@ public class MainController implements Initializable {
     @FXML
     private TableView<MessageHeadline> tableMessages;
 
+    @FXML
+    private Button addUserButton;
+
+    @FXML
+    private Button deleteUserButton;
+
+    @FXML
+    private Button sentButton;
 
     private ObservableList<MessageHeadline> messagesList = FXCollections.observableArrayList();
     private ObservableList<User> accounts = FXCollections.observableArrayList();
@@ -72,9 +94,11 @@ public class MainController implements Initializable {
     private FolderType currentFolderType;
     private User currentUser;
 
+    private boolean is_online;
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        setInternetIndicator();
+        checkInternetConnection();
 
         usersList.setItems(accounts);
         tableMessages.setItems(messagesList);
@@ -101,9 +125,13 @@ public class MainController implements Initializable {
     private void setSelectedUser() {
         currentUser = usersList.getSelectionModel().getSelectedItem();
         lbl_curr_user.setText(currentUser.getUsername());
-        closeReceiver();
-        setReceiver();
-        setNewMessages();
+        if (is_online) {
+            closeReceiver();
+            setReceiver();
+            setNewMessages();
+        } else {
+            setOfflineNewMessage();
+        }
     }
 
     private void setUser() {
@@ -166,10 +194,18 @@ public class MainController implements Initializable {
 
     @FXML
     void logoutUser(ActionEvent event) {
-        if (usersList.getSelectionModel().getSelectedItem() != null) {
-            accounts.remove(usersList.getSelectionModel().getSelectedItem());
-            setUser();
+        if (is_online) {
+            if (usersList.getSelectionModel().getSelectedItem() != null) {
+                accounts.remove(usersList.getSelectionModel().getSelectedItem());
+                setUser();
+            }
+        } else {
+            try {
+                FileUtils.deleteDirectory(new File(System.getProperty("user.dir") + "/Mailbox/Accounts/" + currentUser.getUsername() + ".sbd"));
+            } catch (IOException ignored) {
+            }
         }
+
     }
 
     @FXML
@@ -188,22 +224,33 @@ public class MainController implements Initializable {
 
         TableColumn<MessageHeadline, String> fromColumn = new TableColumn<>("from");
         fromColumn.setCellValueFactory(param -> param.getValue().fromProperty());
-        fromColumn.setPrefWidth(150);
+        fromColumn.setPrefWidth(200);
+
+        TableColumn<MessageHeadline, String> toColumn = new TableColumn<>("to");
+        toColumn.setCellValueFactory(param -> param.getValue().toProperty());
+        toColumn.setPrefWidth(200);
 
         TableColumn<MessageHeadline, String> subjectColumn = new TableColumn<>("subject");
         subjectColumn.setCellValueFactory(param -> param.getValue().subjectProperty());
-        subjectColumn.setPrefWidth(250);
+        subjectColumn.setPrefWidth(150);
 
         TableColumn<MessageHeadline, Date> sentDateColumn = new TableColumn<>("date");
         sentDateColumn.setCellValueFactory(param -> param.getValue().dateProperty());
-        sentDateColumn.setPrefWidth(250);
+        sentDateColumn.setPrefWidth(100);
         sentDateColumn.setSortType(TableColumn.SortType.DESCENDING);
 
-        table.getColumns().addAll(fromColumn, subjectColumn, sentDateColumn);
+        table.getColumns().addAll(fromColumn, toColumn, subjectColumn, sentDateColumn);
     }
 
-    private void setInternetIndicator() {
-        statusInternetShape.setFill(SettingsApp.getInstance().isOnline() ? Color.GREENYELLOW : Color.ORANGERED);
+    private void checkInternetConnection() {
+        is_online = MailUtility.checkInternetConnect();
+        statusInternetShape.setFill(is_online ? Color.GREENYELLOW : Color.ORANGERED);
+        if (!is_online) {
+            appWithoutInternet();
+            sentButton.setDisable(!is_online);
+            addUserButton.setDisable(!is_online);
+            syncButton.setDisable(!is_online);
+        }
     }
 
     private void setReceiver() {
@@ -213,7 +260,7 @@ public class MainController implements Initializable {
             receiver.openFolder(currentFolderType);
             receiver.storeOpen();
         } catch (NullPointerException e) {
-            e.printStackTrace();
+            logger.log(Level.INFO, e.getMessage());
         }
     }
 
@@ -243,7 +290,7 @@ public class MainController implements Initializable {
                 receiver.storeOpen();
             }
         } catch (NullPointerException e) {
-            e.printStackTrace();
+            logger.log(Level.INFO, e.getMessage());
         }
     }
 
@@ -255,17 +302,25 @@ public class MainController implements Initializable {
         }
     }
 
+    private void setOfflineNewMessage() {
+        if (messagesList != null && accounts.size() != 0) {
+            messagesList.clear();
+            messagesList.addAll(new MStorUtility("Accounts/", currentUser.getUsername() + ".sbd/", currentFolderType).getLocalMail());
+            tableMessages.getSortOrder().add(tableMessages.getColumns().get(2));
+        }
+    }
+
     private void viewLoginForm(ActionEvent event) {
         try {
             Stage stage = new Stage();
             FXMLLoader loader = new FXMLLoader(getClass().getResource(
                     "/FXML/LoginForm.fxml"));
             Parent root = (Parent) loader.load();
-            LoginFormController controller = loader.getController();
+            LoginController controller = loader.getController();
             controller.init(accounts);
             setWindow((Node) event.getSource(), stage, root, "Добавить аккаунт");
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.log(Level.INFO, e.getMessage());
         }
     }
 
@@ -280,7 +335,7 @@ public class MainController implements Initializable {
             controller.init(currentUser);
             setWindow((Node) event.getSource(), stage, root, "Отправить письмо");
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.log(Level.INFO, e.getMessage());
         }
     }
 
@@ -288,14 +343,18 @@ public class MainController implements Initializable {
         try {
             Stage stage = new Stage();
             FXMLLoader loader = new FXMLLoader(getClass().getResource(
-                    "/FXML/LetterViewForm.fxml"));
+                    "/FXML/ReceiveForm.fxml"));
             Parent root = loader.load();
-            ReceiverLetterController controller = loader.getController();
-            Message imapMessage = receiver.getMessage(msg);
-            controller.init((IMAPMessage) imapMessage);
+            ReceiverController controller = loader.getController();
+            Message imapMessage;
+            if (is_online)
+                imapMessage = receiver.getMessage(msg);
+            else
+                imapMessage = new MStorUtility("Accounts/", currentUser.getUsername() + ".sbd/", currentFolderType).getMessage(msg);
+            controller.init(imapMessage);
             setWindow((Node) event.getSource(), stage, root, "Просмотр письма");
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.log(Level.INFO, e.getMessage());
         }
     }
 
@@ -307,9 +366,58 @@ public class MainController implements Initializable {
         trashbox.setText(currentFolderType.equals(TRASH) ? "> Корзина" : "Корзина");
     }
 
+    public void generateKeysRSA(ActionEvent event) {
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        directoryChooser.setTitle("Выберите директорию для ключей RSA");
+        File selectedDirectory = directoryChooser.showDialog(((Node) event.getSource()).getScene().getWindow());
+        if (selectedDirectory != null) RSA.generateKeysRSA(selectedDirectory.getAbsolutePath());
+    }
+
+    public void generateKeysRSA2(ActionEvent event) {
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        directoryChooser.setTitle("Выберите директорию для ключей RSA");
+        File selectedDirectory = directoryChooser.showDialog(((Node) event.getSource()).getScene().getWindow());
+        if (selectedDirectory != null) {
+            String username;
+            if (currentUser != null)
+                username = currentUser.getUsername().split("@")[0];
+            else
+                username = "RSA keys";
+            DigitalSignatureEmail.generateKeysRSA(selectedDirectory.getAbsolutePath(), username);
+        }
+
+    }
+
     private void changeFolder() {
-        newConnection();
-        setNewMessages();
+        if (is_online) {
+            newConnection();
+            setNewMessages();
+        } else {
+            setOfflineNewMessage();
+        }
         setCurrentButtonFolder();
+    }
+
+    public void sync(ActionEvent event) throws IOException {
+        Stage stage = new Stage();
+        FXMLLoader loader = new FXMLLoader(getClass().getResource(
+                "/FXML/SaverForm.fxml"));
+        Parent root = loader.load();
+        SaverController controller = loader.getController();
+        controller.init(currentUser);
+        setWindow((Node) event.getSource(), stage, root, "Синхронизация аккаунта " + currentUser.getUsername());
+    }
+
+    private void appWithoutInternet() {
+        Stream.of(
+                Objects.requireNonNull(new File(System.getProperty("user.dir") + "/Mailbox/Accounts/")
+                        .listFiles(File::isDirectory))
+        ).forEach(
+                (File f) -> accounts.add(
+                        new User(
+                                f.getName().replaceAll(".sbd", ""),
+                                "",
+                                checkMailServers(f.getName().replaceAll(".sbd", ""))
+                        )));
     }
 }

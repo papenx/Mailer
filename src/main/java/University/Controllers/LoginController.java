@@ -1,8 +1,8 @@
 package University.Controllers;
 
-import University.Info.MailServers;
+import University.Enums.MailServers;
 import University.Models.User;
-import University.Senders.SMTP.Sender;
+import University.SMTP.Sender;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -12,15 +12,14 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
-import java.awt.*;
 import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static University.Services.MailUtility.checkMailServers;
+import static University.Utilities.MailUtility.checkMailServers;
 
-public class LoginFormController implements Initializable {
+public class LoginController implements Initializable {
     @FXML
     private TextField fld_username;
 
@@ -60,6 +59,6 @@ public class LoginFormController implements Initializable {
     }
 
     private boolean checkUserName(String username, ObservableList<User> observableList) {
-        return observableList.stream().noneMatch(user -> user.getUsername().equals(username));
+        return observableList.stream().parallel().noneMatch(user -> user.getUsername().equals(username));
     }
 }

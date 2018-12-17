@@ -1,8 +1,6 @@
 package University.Controllers;
 
-import University.Models.FileInfo;
-import University.Receivers.IMAP.Receiver;
-import com.sun.mail.imap.IMAPMessage;
+import University.Encryption.CipherUtil;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -10,30 +8,28 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Orientation;
 import javafx.scene.Node;
-import javafx.scene.control.ListView;
-import javafx.scene.control.SelectionMode;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 
-import javax.mail.Address;
 import javax.mail.BodyPart;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMultipart;
 import java.io.*;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.ResourceBundle;
-import java.util.stream.Collectors;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import static University.Services.MailUtility.decodeMailText;
-import static University.Services.MailUtility.decodeRecepitntsText;
-import static University.Services.MailUtility.getTextFromMessage;
+import static University.Encryption.DigitalSignatureEmail.verifyEmail;
+import static University.Utilities.MailUtility.decodeMailText;
+import static University.Utilities.MailUtility.decodeRecepitntsText;
+import static University.Utilities.MailUtility.getTextFromMessage;
 
-public class ReceiverLetterController implements Initializable {
+public class ReceiverController implements Initializable {
+    private static final Logger logger = Logger.getLogger(ReceiverController.class.getName());
 
     @FXML
     private WebView webview;
@@ -50,7 +46,7 @@ public class ReceiverLetterController implements Initializable {
     @FXML
     private ListView<String> listFiles;
 
-    private IMAPMessage message;
+    private Message message;
 
     private String separator = File.separator;
 
@@ -58,6 +54,7 @@ public class ReceiverLetterController implements Initializable {
 
     private String downloadFolderPath = userHomePath + separator + "Downloads" + separator;
 
+    private String content;
 
     private ObservableList<String> observableFileList = FXCollections.observableArrayList();
 
@@ -73,11 +70,11 @@ public class ReceiverLetterController implements Initializable {
         });
     }
 
-    void init(IMAPMessage message) {
+    void init(Message message) {
         this.message = message;
         try {
             String subject = decodeMailText(message.getSubject());
-            String content = decodeMailText(getTextFromMessage(message, observableFileList));
+            this.content = decodeMailText(getTextFromMessage(message, observableFileList)).replaceAll("\\r\\n", "");
             String from = decodeRecepitntsText(message.getRecipients(Message.RecipientType.TO));
             subjectMail.setText(subject);
             fromWhom.setText(from);
@@ -85,7 +82,7 @@ public class ReceiverLetterController implements Initializable {
             WebEngine webEngine = webview.getEngine();
             webEngine.loadContent(content);
         } catch (MessagingException | IOException e) {
-            e.printStackTrace();
+            logger.log(Level.INFO, e.getMessage());
         }
 
     }
@@ -117,7 +114,7 @@ public class ReceiverLetterController implements Initializable {
                 }
             }
         } catch (MessagingException | IOException e) {
-            e.printStackTrace();
+            logger.log(Level.INFO, e.getMessage());
         }
         return null;
     }
@@ -137,7 +134,21 @@ public class ReceiverLetterController implements Initializable {
             }
             output.close();
         } catch (MessagingException | IOException e) {
-            e.printStackTrace();
+            logger.log(Level.INFO, e.getMessage());
         }
+    }
+
+    public void verifySignatureFromEmail(ActionEvent event) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Проерка подписи");
+        alert.setHeaderText(null);
+        alert.setContentText(verifyEmail(event, content) ? "Подпись верна" : "Подпись подделана" );
+
+        alert.showAndWait();
+    }
+
+    public void decryptEmail(ActionEvent event) {
+        WebEngine webEngine = webview.getEngine();
+        webEngine.loadContent(CipherUtil.decryptEmail(event, content));
     }
 }

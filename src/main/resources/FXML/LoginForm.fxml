@@ -4,8 +4,8 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.control.PasswordField?>
-<AnchorPane prefHeight="200.0" prefWidth="300.0" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="University.Controllers.LoginFormController">
-   <TextField fx:id="fld_username" text="rodion-belovitskiy@rambler.ru" layoutX="13.0" layoutY="44.0" prefHeight="25.0" prefWidth="275.0" promptText="Логин" />
-   <PasswordField fx:id="fld_pass" text="rodionbelovitskiy" layoutX="13.0" layoutY="95.0" prefHeight="25.0" prefWidth="275.0" promptText="Пароль" />
+<AnchorPane prefHeight="200.0" prefWidth="300.0" xmlns="http://javafx.com/javafx/8.0.191" xmlns:fx="http://javafx.com/fxml/1" fx:controller="University.Controllers.LoginController">
+   <TextField fx:id="fld_username" text="JustTestingMyApp@yandex.ua" layoutX="13.0" layoutY="44.0" prefHeight="25.0" prefWidth="275.0" promptText="Логин" />
+   <PasswordField fx:id="fld_pass" text="godlike2598" layoutX="13.0" layoutY="95.0" prefHeight="25.0" prefWidth="275.0" promptText="Пароль" />
    <Button layoutX="239.0" layoutY="131.0" mnemonicParsing="false" onAction="#login" text="Войти" />
 </AnchorPane>

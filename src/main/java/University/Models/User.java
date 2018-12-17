@@ -1,6 +1,6 @@
 package University.Models;
 
-import University.Info.MailServers;
+import University.Enums.MailServers;
 
 public class User {
     private String password;

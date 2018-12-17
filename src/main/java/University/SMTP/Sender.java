@@ -1,6 +1,6 @@
-package University.Senders.SMTP;
+package University.SMTP;
 
-import University.Info.MailServers;
+import University.Enums.MailServers;
 import University.Models.FileInfo;
 
 import javax.activation.DataHandler;
@@ -16,23 +16,15 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static University.Services.MailUtility.getNameMailServer;
+import static University.Utilities.MailUtility.getNameMailServer;
 
 public class Sender {
-    private static final Logger logger = Logger.getLogger(University.Senders.SMTP.Sender.class.getName());
+    private static final Logger logger = Logger.getLogger(Sender.class.getName());
 
     private String username;
     private String password;
     private Properties properties;
 
-    /**
-     * Конструктор для сохранения почты, пароля и загрузки настроек
-     *
-     * @param username почта пользователя от выбранного почтового сервера
-     * @param password пароль пользователя от выбранного почтового сервера
-     * @param tls использовать протокол TLS, иначе SSL
-     * @param mailServers почтовый сервис
-     * */
     public Sender(String username, String password, boolean tls, MailServers mailServers) {
         this.username = username;
         this.password = password;

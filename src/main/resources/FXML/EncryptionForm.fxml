@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.jfoenix.controls.JFXButton?>
+<?import com.jfoenix.controls.JFXCheckBox?>
+<?import com.jfoenix.controls.JFXPasswordField?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane prefHeight="235.0" prefWidth="225.0" xmlns="http://javafx.com/javafx/8.0.172-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="University.Controllers.EncryptionController">
+   <children>
+      <JFXCheckBox fx:id="sign_email" layoutX="14.0" layoutY="50.0" prefHeight="18.0" prefWidth="190.0" text="Подписать сообщение" />
+      <JFXCheckBox fx:id="crypt_email" checkedColor="#106c9c" layoutX="14.0" layoutY="86.0" prefHeight="18.0" prefWidth="189.0" text="Зашифровать сообщение" />
+      <Label layoutX="14.0" layoutY="14.0" text="Выберите нужные опции" />
+      <JFXPasswordField fx:id="fld_password" focusColor="#1e88e5" layoutX="14.0" layoutY="155.0" prefHeight="25.0" prefWidth="189.0" promptText="Введите пароль для шифрования" />
+      <JFXButton layoutX="28.0" layoutY="204.0" onAction="#Send" prefHeight="25.0" prefWidth="167.0" text="Отправить" />
+      <JFXCheckBox fx:id="have_keys_rsa" checkedColor="#daa813" layoutX="14.0" layoutY="122.0" prefHeight="18.0" prefWidth="189.0" text="У меня нет RSA ключей" />
+   </children>
+</AnchorPane>

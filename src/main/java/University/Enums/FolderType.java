@@ -1,4 +1,4 @@
-package University.Info;
+package University.Enums;
 
 public enum FolderType {
     INBOX,

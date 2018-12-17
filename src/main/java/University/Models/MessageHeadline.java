@@ -9,11 +9,12 @@ import javax.mail.Message;
 import javax.mail.MessagingException;
 import java.util.Date;
 
-import static University.Services.MailUtility.decodeMailText;
-import static University.Services.MailUtility.decodeRecepitntsText;
+import static University.Utilities.MailUtility.decodeMailText;
+import static University.Utilities.MailUtility.decodeRecepitntsText;
 
 public class MessageHeadline {
     private StringProperty from;
+    private StringProperty to;
     private StringProperty subject;
     private ObjectProperty<Date> date;
     private int messageNum;
@@ -27,8 +28,10 @@ public class MessageHeadline {
 
     public MessageHeadline(Message message) throws MessagingException {
         String recipients = decodeRecepitntsText(message.getRecipients(Message.RecipientType.TO));
+        String fromers = decodeRecepitntsText(message.getFrom());
         String subj = decodeMailText(message.getSubject());
-        from = new SimpleStringProperty(recipients);
+        from = new SimpleStringProperty(fromers);
+        to = new SimpleStringProperty(recipients);
         subject = new SimpleStringProperty(subj);
         date = new SimpleObjectProperty<>(message.getSentDate());
         messageNum = message.getMessageNumber();
@@ -40,6 +43,10 @@ public class MessageHeadline {
 
     public StringProperty fromProperty() {
         return from;
+    }
+
+    public StringProperty toProperty() {
+        return to;
     }
 
     public void setFrom(String from) {
