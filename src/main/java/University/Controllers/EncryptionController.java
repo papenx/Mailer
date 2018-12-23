@@ -2,6 +2,7 @@ package University.Controllers;
 
 import University.Encryption.CipherUtil;
 import University.Encryption.DigitalSignatureEmail;
+import University.Encryption.RSA;
 import com.jfoenix.controls.JFXCheckBox;
 import com.jfoenix.controls.JFXPasswordField;
 import javafx.event.ActionEvent;
@@ -11,12 +12,20 @@ import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.TextFormatter;
 import javafx.stage.Stage;
-
+import java.io.File;
+import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.SignatureException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.ResourceBundle;
 import java.util.function.UnaryOperator;
 
-import static University.Utilities.FileUtility.chooseDirectory;
+import static University.Info.MailInfo.*;
 
 public class EncryptionController implements Initializable {
 
@@ -26,31 +35,29 @@ public class EncryptionController implements Initializable {
     @FXML
     private JFXCheckBox crypt_email;
 
-    @FXML
-    private JFXCheckBox have_keys_rsa;
 
     @FXML
     private JFXPasswordField fld_password;
 
     private String username;
     private String content;
+    private String to;
 
-    private String pathToRSAPublicKey;
+    private static String separator = File.separator;
+
     private String pathToSigFile;
+    private String pathToRsaPubKey;
 
-    public void init(String username, String content) {
+    public void init(String username, String content, String to) {
         this.username = username.split("@")[0];
         this.content = content;
+        this.to = to;
     }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        have_keys_rsa.setDisable(true);
         fld_password.setDisable(true);
 
-        sign_email.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            have_keys_rsa.setDisable(!newValue);
-        });
 
         crypt_email.selectedProperty().addListener((observable, oldValue, newValue) -> {
             fld_password.setDisable(!newValue);
@@ -62,19 +69,54 @@ public class EncryptionController implements Initializable {
         fld_password.setTextFormatter(formatter);
     }
 
-    public void Send(ActionEvent event) {
+    public static void checkUserDir(String username, String to) {
+
+
+        String userFolderPath = System.getProperty("user.dir") + separator + "UsersInfo" + separator + to;
+
+        globalSignFolder = userFolderPath + separator + "Signs";
+
+        if (!Files.exists(Paths.get(userFolderPath))) {
+            File userFolder = new File(userFolderPath);
+            userFolder.mkdirs();
+        }
+        String cipherKeyPath = userFolderPath + separator + "cipherKeys";
+        String signKeyPath = userFolderPath + separator + "signKeys";
+
+        if (!Files.exists(Paths.get(cipherKeyPath))) {
+            File cipherKeysFolder = new File(cipherKeyPath);
+            cipherKeysFolder.mkdirs();
+        }
+        if (!Files.exists(Paths.get(signKeyPath))) {
+            File signKeysFolder = new File(signKeyPath);
+            signKeysFolder.mkdirs();
+        }
+        if (!Files.exists(Paths.get(globalSignFolder))) {
+            File signsFolder = new File(globalSignFolder);
+            signsFolder.mkdirs();
+        }
+        String keysPath = DigitalSignatureEmail.generateKeysRSA(signKeyPath, username);
+        pathToRSAPublicKey = keysPath + RSA_PUBLIC_KEY_EXT;
+        pathToRSAPrivateKey = keysPath + RSA_PRIVATE_KEY_EXT;
+
+        RSA.generateKeysRSA(cipherKeyPath, username);
+    }
+
+    public void Send(ActionEvent event) throws NoSuchAlgorithmException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException, InvalidKeySpecException {
+
+        // always automatically
+        checkUserDir(username, to);
+
         if (sign_email.isSelected()) {
-            if (have_keys_rsa.isSelected()) {
-                pathToRSAPublicKey = DigitalSignatureEmail.generateKeysRSA(chooseDirectory(event, "Выбирите директорию для ключей RSA").getAbsolutePath(), username);
-            }
-            pathToSigFile = DigitalSignatureEmail.signEmailWithSaveSign(event, content, username);
+            pathToSigFile = DigitalSignatureEmail.signEmailWithSaveSign(event, content, username, true);
+            pathToRsaPubKey = pathToRSAPublicKey;
         }
         if (crypt_email.isSelected()) {
             System.out.println(fld_password.getText());
             if (fld_password.getText().length() == 16) {
                 content = CipherUtil.encryptEmail(event, content, fld_password.getText());
             } else {
-                new Alert(Alert.AlertType.ERROR, "Пароль должен содержать 16 симоволов от 0 до 9 и от A до F").showAndWait();
+                new Alert(Alert.AlertType.ERROR, "16-ти символьный пароль").showAndWait();
             }
         }
         closeWindow(event);
@@ -90,10 +132,10 @@ public class EncryptionController implements Initializable {
     }
 
     public String getPathToRSAPublicKey() {
-        return pathToRSAPublicKey;
+        return pathToRsaPubKey;
     }
 
-    public String getPathToSigFile(){
+    public String getPathToSigFile() {
         return pathToSigFile;
     }
 }

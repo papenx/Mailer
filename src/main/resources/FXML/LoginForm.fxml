@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.control.PasswordField?>
-<AnchorPane prefHeight="200.0" prefWidth="300.0" xmlns="http://javafx.com/javafx/8.0.191" xmlns:fx="http://javafx.com/fxml/1" fx:controller="University.Controllers.LoginController">
-   <TextField fx:id="fld_username" text="JustTestingMyApp@yandex.ua" layoutX="13.0" layoutY="44.0" prefHeight="25.0" prefWidth="275.0" promptText="Логин" />
-   <PasswordField fx:id="fld_pass" text="godlike2598" layoutX="13.0" layoutY="95.0" prefHeight="25.0" prefWidth="275.0" promptText="Пароль" />
-   <Button layoutX="239.0" layoutY="131.0" mnemonicParsing="false" onAction="#login" text="Войти" />
+
+<AnchorPane prefHeight="251.0" prefWidth="347.0" stylesheets="@../CSS/Main.css" xmlns="http://javafx.com/javafx/8.0.172-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="University.Controllers.LoginController">
+   <TextField fx:id="fld_username" layoutX="60.0" layoutY="95.0" prefHeight="25.0" prefWidth="227.0" promptText="Логин" stylesheets="@../CSS/Main.css" text="igos.3218@yandex.ua" />
+   <PasswordField fx:id="fld_pass" layoutX="60.0" layoutY="141.0" prefHeight="25.0" prefWidth="227.0" promptText="Пароль" stylesheets="@../CSS/Main.css" text="blurhd512" />
+   <Button layoutX="97.0" layoutY="182.0" mnemonicParsing="false" onAction="#login" prefHeight="25.0" prefWidth="152.0" stylesheets="@../CSS/Main.css" text="Войти" />
+   <Label layoutX="99.0" layoutY="44.0" stylesheets="@../CSS/Main.css" text="Войдите в учётную запись" />
 </AnchorPane>

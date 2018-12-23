@@ -36,12 +36,12 @@ public class SaverController implements Initializable {
             deleteFolder();
             IntStream.range(0, FolderType.values().length).parallel().forEachOrdered(i -> {
                 new Thread(() -> {
-                    progress_area.appendText(String.format("Началась синхронизация папки %s. \n", FolderType.values()[i]));
+                    progress_area.appendText(String.format("Процедура синхронизации папки %s. \n", FolderType.values()[i]));
                     Receiver receiver = new Receiver(currentUser.getUsername(), currentUser.getPassword(), checkMailServers(currentUser.getUsername()));
                     receiver.openFolder(FolderType.values()[i]);
                     receiver.storeOpen();
                     new MStorUtility("Accounts/", currentUser.getUsername() + "/", FolderType.values()[i]).createMbox(receiver.getMessage());
-                    progress_area.appendText(String.format("Папка %s успешно синхронизированна. \n", FolderType.values()[i]));
+                    progress_area.appendText(String.format("Папка %s синхронизирована. \n", FolderType.values()[i]));
                     receiver.storeClose();
                     receiver.closeFolder();
                 }).start();

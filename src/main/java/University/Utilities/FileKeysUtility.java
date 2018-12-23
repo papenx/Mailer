@@ -1,8 +1,8 @@
 package University.Utilities;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import javax.mail.BodyPart;
+import javax.mail.MessagingException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.KeyFactory;
@@ -23,6 +23,7 @@ import static University.Info.MailInfo.*;
 
 public class FileKeysUtility {
     private static final Logger logger = Logger.getLogger(FileKeysUtility.class.getName());
+    private static String separator = File.separator;
 
     public static void writeSign(byte[] sign, String pathToFolder) throws IOException {
         FileOutputStream out = new FileOutputStream(pathToFolder + SIGNATURE_EXT);
@@ -30,16 +31,16 @@ public class FileKeysUtility {
         out.close();
     }
 
-    public static void writePublicKeyRSA(PublicKey publicKey, String pathToFolder) throws IOException {
+    public static void writePublicKeyRSA(PublicKey publicKey, String keyPath) throws IOException {
         byte[] publicBytes = publicKey.getEncoded();
-        FileOutputStream outPublicKey = new FileOutputStream(pathToFolder + RSA_PUBLIC_KEY_EXT);
+        FileOutputStream outPublicKey = new FileOutputStream(keyPath);
         outPublicKey.write(publicBytes);
         outPublicKey.close();
     }
 
-    public static void writePrivateKeyRSA(PrivateKey privateKey, String pathToFolder) throws IOException {
+    public static void writePrivateKeyRSA(PrivateKey privateKey, String keyPath) throws IOException {
         byte[] privateBytes = privateKey.getEncoded();
-        FileOutputStream outPrivateKey = new FileOutputStream(pathToFolder + RSA_PRIVATE_KEY_EXT);
+        FileOutputStream outPrivateKey = new FileOutputStream(keyPath);
         outPrivateKey.write(privateBytes);
         outPrivateKey.close();
     }
@@ -54,6 +55,20 @@ public class FileKeysUtility {
 
     public static byte[] readSignature(String path) throws IOException {
         return getBytes(path);
+    }
+
+    public static byte[] getSignBytes(BodyPart bodyPart) {
+        try {
+            InputStream input = bodyPart.getInputStream();
+            byte[] buffer = new byte[128];
+
+            input.read(buffer);
+
+            return buffer;
+        } catch (MessagingException | IOException e) {
+            logger.log(Level.INFO, e.getMessage());
+        }
+        return null;
     }
 
 
@@ -79,19 +94,28 @@ public class FileKeysUtility {
         return keyFactory.generatePrivate(keySpec);
     }
 
-    public static void writeToFileKeysRSA(String pathToFolder, PrivateKey privateKey, PublicKey  publicKey){
-        String fileName = pathToFolder + "/" + getDateToString();
+    public static void writeToFileKeysRSA(String pathToFolder, PrivateKey privateKey, PublicKey  publicKey, String user){
 
-        try (FileOutputStream out = new FileOutputStream(fileName + PRIVATE_KEY_EXT)) {
-            out.write(privateKey.getEncoded());
-        } catch (IOException e) {
-            logger.log(Level.INFO, e.getMessage());
+        pathToRSAPublicKeyCipher = pathToFolder + separator + user + PUBLIC_KEY_EXT;
+        pathToRSAPrivateKeyCipher = pathToFolder + separator + user + PRIVATE_KEY_EXT;
+
+        writeKey(pathToRSAPublicKeyCipher, publicKey, null);
+        writeKey(pathToRSAPrivateKeyCipher, null, privateKey);
+    }
+
+    private static void writeKey(String path, PublicKey pub, PrivateKey pk) {
+        byte[] bytes;
+        if (pub == null) {
+            bytes = pk.getEncoded();
+        } else {
+            bytes = pub.getEncoded();
         }
-
-        try (FileOutputStream out = new FileOutputStream(fileName + PUBLIC_KEY_EXT)) {
-            out.write(publicKey.getEncoded());
-        } catch (IOException e) {
-            logger.log(Level.INFO, e.getMessage());
+        if (!Files.exists(Paths.get(path))) {
+            try (FileOutputStream out = new FileOutputStream(path)) {
+                out.write(bytes);
+            } catch (IOException e) {
+                logger.log(Level.INFO, e.getMessage());
+            }
         }
     }
 

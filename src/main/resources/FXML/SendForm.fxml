@@ -9,15 +9,15 @@
 
 <!--<html><head></head><body contenteditable="true"></body></html>-->
 
-<AnchorPane prefHeight="400.0" prefWidth="850.0" xmlns="http://javafx.com/javafx/8.0.191" xmlns:fx="http://javafx.com/fxml/1" fx:controller="University.Controllers.SenderController">
-    <JFXButton layoutX="511.0" layoutY="360.0" onAction="#toSentAction" text="Отправить" />
-    <JFXButton layoutX="14.0" layoutY="360.0" onAction="#cancelAction" text="Отменить" />
-    <ListView fx:id="listFiles" layoutX="601.0" layoutY="69.0" prefHeight="240.0" prefWidth="235.0" />
-    <Label layoutX="601.0" layoutY="23.0" text="Файлы" />
-    <TextField fx:id="to_whom" layoutX="14.0" layoutY="19.0" prefHeight="25.0" prefWidth="575.0" promptText="Кому" />
-    <TextField fx:id="subject_message" layoutX="14.0" layoutY="69.0" prefHeight="25.0" prefWidth="575.0" promptText="Тема сообщения" />
-    <Label fx:id="lbl_files_info" layoutX="601.0" layoutY="364.0" prefHeight="17.0" prefWidth="235.0" text="" />
-   <JFXButton layoutX="601.0" layoutY="323.0" onAction="#addFiles" prefHeight="25.0" prefWidth="235.0" text="Добавить файлы" />
-   <HTMLEditor fx:id="content" htmlText="&lt;html&gt;&lt;head&gt;&lt;/head&gt;&lt;body contenteditable=&quot;true&quot;&gt;&lt;/body&gt;&lt;/html&gt;" layoutX="14.0" layoutY="119.0" prefHeight="240.0" prefWidth="575.0" />
-   <JFXButton layoutX="328.0" layoutY="360.0" onAction="#encAndSend" text="Зашифровать и отправить" />
+<AnchorPane prefHeight="400.0" prefWidth="850.0" stylesheets="@../CSS/Main.css" xmlns="http://javafx.com/javafx/8.0.172-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="University.Controllers.SenderController">
+    <JFXButton alignment="CENTER" layoutX="514.0" layoutY="360.0" onAction="#toSentAction" stylesheets="@../CSS/Main.css" text="Отправить" />
+    <JFXButton alignment="CENTER" layoutX="14.0" layoutY="360.0" onAction="#cancelAction" stylesheets="@../CSS/Main.css" text="Отмена" />
+    <ListView fx:id="listFiles" layoutX="601.0" layoutY="69.0" prefHeight="240.0" prefWidth="235.0" stylesheets="@../CSS/Main.css" />
+    <Label layoutX="601.0" layoutY="44.0" text="Файлы" />
+    <TextField fx:id="to_whom" layoutX="14.0" layoutY="19.0" prefHeight="25.0" prefWidth="575.0" promptText="Кому" stylesheets="@../CSS/Main.css" />
+    <TextField fx:id="subject_message" layoutX="14.0" layoutY="69.0" prefHeight="25.0" prefWidth="575.0" promptText="Тема сообщения" stylesheets="@../CSS/Main.css" />
+    <Label fx:id="lbl_files_info" layoutX="601.0" layoutY="364.0" prefHeight="17.0" prefWidth="235.0" stylesheets="@../CSS/Main.css" text="" />
+   <JFXButton alignment="CENTER" layoutX="601.0" layoutY="323.0" onAction="#addFiles" prefHeight="25.0" prefWidth="235.0" stylesheets="@../CSS/Main.css" text="Прикрепить" />
+   <HTMLEditor fx:id="content" htmlText="&lt;html&gt;&lt;head&gt;&lt;/head&gt;&lt;body contenteditable=&quot;true&quot;&gt;&lt;/body&gt;&lt;/html&gt;" layoutX="14.0" layoutY="119.0" prefHeight="230.0" prefWidth="575.0" />
+   <JFXButton alignment="CENTER" layoutX="425.0" layoutY="360.0" onAction="#encAndSend" stylesheets="@../CSS/Main.css" text="Доп. опции" />
 </AnchorPane>

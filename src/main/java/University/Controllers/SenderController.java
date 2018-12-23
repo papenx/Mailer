@@ -22,6 +22,8 @@ import javafx.stage.Stage;
 import org.apache.commons.io.FilenameUtils;
 import org.jsoup.helper.StringUtil;
 
+
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -29,8 +31,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static University.Info.MailInfo.RSA_PUBLIC_KEY_EXT;
-import static University.Info.MailInfo.SIGNATURE_EXT;
+import static University.Info.MailInfo.*;
 import static University.Utilities.FileUtility.getMultiFiles;
 import static University.Utilities.MailUtility.checkMailServers;
 
@@ -87,9 +88,9 @@ public class SenderController implements Initializable {
                 validateEmails.add(email);
         }
 
-        if (validateEmails.size() != 0 && !content.getHtmlText().equals("") && !subject_message.getText().equals("")
+        if (validateEmails.size() != 0 && validateEmails.size() <= MAX_NUMBERS_OF_RECIPIENTS && !content.getHtmlText().equals("") && !subject_message.getText().equals("")
                 && content.getHtmlText().getBytes().length <= MailInfo.MAX_LETTER_SIZE_BYTES) {
-            if (listFiles.getItems().size() != 0)
+            if (listFiles.getItems().size() != 0 && listFiles.getItems().size() <= MAX_NUM_FILES)
                 validateEmails.forEach(validateEmail -> sender.sendMessageWithAttachments(subject_message.getText(), content.getHtmlText(), validateEmail, from, observableFileList));
             else
                 validateEmails.forEach(validateEmail -> sender.sendMessage(subject_message.getText(), content.getHtmlText(), validateEmail, from));
@@ -110,12 +111,10 @@ public class SenderController implements Initializable {
     }
 
     private List<FileInfo> deleteDuplicateFiles(Stage stage) {
-        //Удаляем дубликаты
         List<FileInfo> list = getMultiFiles(stage);
         List<FileInfo> listFiltered = new ArrayList<>();
         list.removeAll(observableFileList);
 
-        //Удаляем файлы, если макс размер превышен
         long size_temp = size;
         for (FileInfo fileInfo : list) {
             if (size_temp + fileInfo.getSize() <= MailInfo.MAX_FILES_SIZE_BYTES) {
@@ -143,24 +142,26 @@ public class SenderController implements Initializable {
                 "/FXML/EncryptionForm.fxml"));
         Parent root = loader.load();
         EncryptionController controller = loader.getController();
-        controller.init(from, content.getHtmlText());
+        String to = to_whom.getText().replaceAll("\\s", "").split("@")[0];
+        controller.init(from, content.getHtmlText(), to);
         stage.setScene(new Scene(root));
-        stage.setTitle("Зашифровать письмо");
+        stage.setTitle("Конфигурация отправки");
         stage.initModality(Modality.WINDOW_MODAL);
         stage.initOwner(((Node) event.getSource()).getScene().getWindow());
         stage.showAndWait();
 
         content.setHtmlText(controller.getContent());
-        System.out.println("send" + content.getHtmlText().length());
+        System.out.println("Отправлено:" + content.getHtmlText().length());
 
-        addToListFilesRSA(controller.getPathToRSAPublicKey(), RSA_PUBLIC_KEY_EXT);
+        addToListFilesRSA(FilenameUtils.removeExtension(controller.getPathToRSAPublicKey()), RSA_PUBLIC_KEY_EXT);
         addToListFilesRSA(controller.getPathToSigFile(), SIGNATURE_EXT);
+
     }
 
     private void addToListFilesRSA(String path, String EXT) {
         if (StringUtil.isBlank(path))
             return;
-        File file = new File(FilenameUtils.removeExtension(path) + EXT);
+        File file = new File(path + EXT);
         if (file.exists() && file.isFile())
             observableFileList.add(new FileInfo(file));
     }

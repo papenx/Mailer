@@ -3,17 +3,14 @@ package University.Encryption;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import javax.crypto.*;
-import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
-import java.security.spec.KeySpec;
 import java.util.Base64;
 
-import static University.Info.MailInfo.AES_ALG;
 
 public class AES {
 
@@ -54,14 +51,8 @@ public class AES {
     }
 
     private static SecretKey getSecretKeyFromPassword(String password) throws NoSuchAlgorithmException, InvalidKeyException, InvalidKeySpecException {
-//        PBEKeySpec pbeKeySpec = new PBEKeySpec(password.toCharArray());
-//        SecretKeyFactory secretKeyFactory = SecretKeyFactory.getInstance(AES_ALG);
 
-//        SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
-//        KeySpec spec = new PBEKeySpec(password.toCharArray());
-//        SecretKey tmp = factory.generateSecret(spec);
-
-        MessageDigest digester = MessageDigest.getInstance("MD5");
+        MessageDigest digester = MessageDigest.getInstance("SHA-256");
         for (int i = 0; i < password.toCharArray().length; i++) {
             digester.update((byte) password.toCharArray()[i]);
         }

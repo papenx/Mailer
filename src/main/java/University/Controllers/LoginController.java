@@ -8,6 +8,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
+import javafx.scene.control.Alert;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
@@ -17,6 +18,7 @@ import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static University.Info.MailInfo.MAX_USERS_VALUE;
 import static University.Utilities.MailUtility.checkMailServers;
 
 public class LoginController implements Initializable {
@@ -42,7 +44,7 @@ public class LoginController implements Initializable {
 
     public void login(ActionEvent actionEvent) {
         String username = fld_username.getText();
-        if (validate(username) && checkUserName(username, users)) {
+        if (validate(username) && checkUserName(username, users) && users.size() < MAX_USERS_VALUE) {
             MailServers mailServers = checkMailServers(username);
             Sender sender = new Sender(username, fld_pass.getText(), true, mailServers);
             if (sender.isConnected()) {
@@ -50,7 +52,10 @@ public class LoginController implements Initializable {
                 Stage stage = (Stage) ((Node) actionEvent.getSource()).getScene().getWindow();
                 stage.close();
             }
+        } else {
+            new Alert(Alert.AlertType.ERROR, "Превышено максимальное количество пользователей").showAndWait();
         }
+
     }
 
     private boolean validate(String emailStr) {

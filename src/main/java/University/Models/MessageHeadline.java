@@ -28,9 +28,9 @@ public class MessageHeadline {
 
     public MessageHeadline(Message message) throws MessagingException {
         String recipients = decodeRecepitntsText(message.getRecipients(Message.RecipientType.TO));
-        String fromers = decodeRecepitntsText(message.getFrom());
+        String fromWhom = decodeRecepitntsText(message.getFrom());
         String subj = decodeMailText(message.getSubject());
-        from = new SimpleStringProperty(fromers);
+        from = new SimpleStringProperty(fromWhom);
         to = new SimpleStringProperty(recipients);
         subject = new SimpleStringProperty(subj);
         date = new SimpleObjectProperty<>(message.getSentDate());

@@ -4,10 +4,10 @@ import University.Encryption.DigitalSignatureEmail;
 import University.Encryption.RSA;
 import University.Enums.FolderType;
 import University.Enums.MailServers;
+import University.IMAP.Receiver;
 import University.MStor.MStorUtility;
 import University.Models.MessageHeadline;
 import University.Models.User;
-import University.IMAP.Receiver;
 import University.Utilities.MailUtility;
 import com.jfoenix.controls.JFXSpinner;
 import javafx.collections.FXCollections;
@@ -40,6 +40,7 @@ import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 import static University.Enums.FolderType.*;
+import static University.Info.MailInfo.globalCurrentUser;
 import static University.Utilities.MailUtility.checkMailServers;
 
 public class MainController implements Initializable {
@@ -96,6 +97,8 @@ public class MainController implements Initializable {
 
     private boolean is_online;
 
+    public  Message imapMessage;
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         checkInternetConnection();
@@ -125,6 +128,7 @@ public class MainController implements Initializable {
     private void setSelectedUser() {
         currentUser = usersList.getSelectionModel().getSelectedItem();
         lbl_curr_user.setText(currentUser.getUsername());
+        globalCurrentUser = currentUser.getUsername().split("@")[0];
         if (is_online) {
             closeReceiver();
             setReceiver();
@@ -138,6 +142,7 @@ public class MainController implements Initializable {
         if (accounts.size() > 0) {
             currentUser = accounts.get(accounts.size() - 1);
             lbl_curr_user.setText(currentUser.getUsername());
+            globalCurrentUser = currentUser.getUsername().split("@")[0];
             closeReceiver();
             setReceiver();
             setNewMessages();
@@ -221,22 +226,24 @@ public class MainController implements Initializable {
     }
 
     private void createTable(TableView table) {
+        table.setPlaceholder(new Label("Пока ещё нет сообщений"));
 
-        TableColumn<MessageHeadline, String> fromColumn = new TableColumn<>("from");
+        TableColumn<MessageHeadline, String> fromColumn = new TableColumn<>("Отправитель");
         fromColumn.setCellValueFactory(param -> param.getValue().fromProperty());
         fromColumn.setPrefWidth(200);
 
-        TableColumn<MessageHeadline, String> toColumn = new TableColumn<>("to");
+        TableColumn<MessageHeadline, String> toColumn = new TableColumn<>("Получатель");
         toColumn.setCellValueFactory(param -> param.getValue().toProperty());
         toColumn.setPrefWidth(200);
 
-        TableColumn<MessageHeadline, String> subjectColumn = new TableColumn<>("subject");
+        TableColumn<MessageHeadline, String> subjectColumn = new TableColumn<>("Тема");
         subjectColumn.setCellValueFactory(param -> param.getValue().subjectProperty());
-        subjectColumn.setPrefWidth(150);
+        subjectColumn.setPrefWidth(175);
 
-        TableColumn<MessageHeadline, Date> sentDateColumn = new TableColumn<>("date");
+        TableColumn<MessageHeadline, Date> sentDateColumn = new TableColumn<>("Дата");
         sentDateColumn.setCellValueFactory(param -> param.getValue().dateProperty());
-        sentDateColumn.setPrefWidth(100);
+        sentDateColumn.setPrefWidth(175);
+
         sentDateColumn.setSortType(TableColumn.SortType.DESCENDING);
 
         table.getColumns().addAll(fromColumn, toColumn, subjectColumn, sentDateColumn);
@@ -244,7 +251,7 @@ public class MainController implements Initializable {
 
     private void checkInternetConnection() {
         is_online = MailUtility.checkInternetConnect();
-        statusInternetShape.setFill(is_online ? Color.GREENYELLOW : Color.ORANGERED);
+        statusInternetShape.setFill(is_online ? Color.LIGHTGREEN : Color.GREY);
         if (!is_online) {
             appWithoutInternet();
             sentButton.setDisable(!is_online);
@@ -254,8 +261,8 @@ public class MainController implements Initializable {
     }
 
     private void setReceiver() {
+        setCurrentMailServer();
         try {
-            setCurrentMailServer();
             receiver = new Receiver(currentUser.getUsername(), currentUser.getPassword(), currentMailServer);
             receiver.openFolder(currentFolderType);
             receiver.storeOpen();
@@ -298,7 +305,7 @@ public class MainController implements Initializable {
         if (messagesList != null && receiver != null) {
             messagesList.clear();
             messagesList.addAll(receiver.checkMessages());
-            tableMessages.getSortOrder().add(tableMessages.getColumns().get(2));
+            tableMessages.getSortOrder().add(tableMessages.getColumns().get(3));
         }
     }
 
@@ -306,7 +313,7 @@ public class MainController implements Initializable {
         if (messagesList != null && accounts.size() != 0) {
             messagesList.clear();
             messagesList.addAll(new MStorUtility("Accounts/", currentUser.getUsername() + ".sbd/", currentFolderType).getLocalMail());
-            tableMessages.getSortOrder().add(tableMessages.getColumns().get(2));
+            tableMessages.getSortOrder().add(tableMessages.getColumns().get(3));
         }
     }
 
@@ -318,7 +325,7 @@ public class MainController implements Initializable {
             Parent root = (Parent) loader.load();
             LoginController controller = loader.getController();
             controller.init(accounts);
-            setWindow((Node) event.getSource(), stage, root, "Добавить аккаунт");
+            setWindow((Node) event.getSource(), stage, root, "Добавить учётную запись");
         } catch (IOException e) {
             logger.log(Level.INFO, e.getMessage());
         }
@@ -333,7 +340,7 @@ public class MainController implements Initializable {
             Parent root = loader.load();
             SenderController controller = loader.getController();
             controller.init(currentUser);
-            setWindow((Node) event.getSource(), stage, root, "Отправить письмо");
+            setWindow((Node) event.getSource(), stage, root, "Написать письмо");
         } catch (IOException e) {
             logger.log(Level.INFO, e.getMessage());
         }
@@ -346,13 +353,13 @@ public class MainController implements Initializable {
                     "/FXML/ReceiveForm.fxml"));
             Parent root = loader.load();
             ReceiverController controller = loader.getController();
-            Message imapMessage;
+
             if (is_online)
                 imapMessage = receiver.getMessage(msg);
             else
                 imapMessage = new MStorUtility("Accounts/", currentUser.getUsername() + ".sbd/", currentFolderType).getMessage(msg);
             controller.init(imapMessage);
-            setWindow((Node) event.getSource(), stage, root, "Просмотр письма");
+            setWindow((Node) event.getSource(), stage, root, "Чтение письма");
         } catch (IOException e) {
             logger.log(Level.INFO, e.getMessage());
         }
@@ -360,7 +367,7 @@ public class MainController implements Initializable {
 
     private void setCurrentButtonFolder() {
         inbox.setText(currentFolderType.equals(INBOX) ? "> Входящие" : "Входящие");
-        sentbox.setText(currentFolderType.equals(SENT) ? "> Исходящие" : "Исходящие");
+        sentbox.setText(currentFolderType.equals(SENT) ? "> Отправленные" : "Отправленные");
         spambox.setText(currentFolderType.equals(SPAM) ? "> Спам" : "Спам");
         draftbox.setText(currentFolderType.equals(DRAFT) ? "> Черновики" : "Черновики");
         trashbox.setText(currentFolderType.equals(TRASH) ? "> Корзина" : "Корзина");
@@ -368,21 +375,21 @@ public class MainController implements Initializable {
 
     public void generateKeysRSA(ActionEvent event) {
         DirectoryChooser directoryChooser = new DirectoryChooser();
-        directoryChooser.setTitle("Выберите директорию для ключей RSA");
+        directoryChooser.setTitle("Выберите директорию для ключей для шифрования RSA");
         File selectedDirectory = directoryChooser.showDialog(((Node) event.getSource()).getScene().getWindow());
-        if (selectedDirectory != null) RSA.generateKeysRSA(selectedDirectory.getAbsolutePath());
+        if (selectedDirectory != null) RSA.generateKeysRSA(selectedDirectory.getAbsolutePath(), currentUser.getUsername());
     }
 
     public void generateKeysRSA2(ActionEvent event) {
         DirectoryChooser directoryChooser = new DirectoryChooser();
-        directoryChooser.setTitle("Выберите директорию для ключей RSA");
+        directoryChooser.setTitle("Выберите директорию для ключей для цифровой подписи RSA");
         File selectedDirectory = directoryChooser.showDialog(((Node) event.getSource()).getScene().getWindow());
         if (selectedDirectory != null) {
             String username;
             if (currentUser != null)
                 username = currentUser.getUsername().split("@")[0];
             else
-                username = "RSA keys";
+                username = "RSA KEYS";
             DigitalSignatureEmail.generateKeysRSA(selectedDirectory.getAbsolutePath(), username);
         }
 
@@ -405,7 +412,7 @@ public class MainController implements Initializable {
         Parent root = loader.load();
         SaverController controller = loader.getController();
         controller.init(currentUser);
-        setWindow((Node) event.getSource(), stage, root, "Синхронизация аккаунта " + currentUser.getUsername());
+        setWindow((Node) event.getSource(), stage, root, "Синхронизация учётной записи " + currentUser.getUsername());
     }
 
     private void appWithoutInternet() {

@@ -6,9 +6,6 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
-import java.util.Base64;
 
 public class MainApp extends Application {
     @Override
@@ -17,7 +14,7 @@ public class MainApp extends Application {
 
         Scene scene = new Scene(root);
 
-        primaryStage.setTitle("Mail client");
+        primaryStage.setTitle("Chernyshov PI15V Mailer");
         primaryStage.setScene(scene);
         primaryStage.show();
     }

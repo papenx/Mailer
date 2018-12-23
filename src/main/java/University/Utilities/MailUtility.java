@@ -22,6 +22,8 @@ import static University.Enums.FolderType.*;
 import static University.Info.MailInfo.GMAIL_DOMEN;
 import static University.Info.MailInfo.YANDEX_DOMAINS;
 
+import static University.Info.MailInfo.*;
+
 public class MailUtility {
     private static final Logger logger = Logger.getLogger(Receiver.class.getName());
     private static boolean textIsHtml;
@@ -82,18 +84,7 @@ public class MailUtility {
     }
 
     public static IMAPFolder getFolder(Store store, MailServers mailServers, FolderType folderType) throws MessagingException {
-        if (mailServers.equals(MailServers.RAMBLER)) {
-            if (folderType.equals(INBOX))
-                return (IMAPFolder) store.getFolder("INBOX");
-            else if (folderType.equals(SENT))
-                return (IMAPFolder) store.getFolder("SentBox");
-            else if (folderType.equals(SPAM))
-                return (IMAPFolder) store.getFolder("Spam");
-            else if (folderType.equals(DRAFT))
-                return (IMAPFolder) store.getFolder("DraftBox");
-            else
-                return (IMAPFolder) store.getFolder("Trash");
-        } else {
+        if (mailServers.equals(MailServers.YANDEX)) {
             if (folderType.equals(INBOX))
                 return (IMAPFolder) store.getFolder("INBOX");
             else if (folderType.equals(SENT))
@@ -104,6 +95,17 @@ public class MailUtility {
                 return getLocalisedFolder(store, "\\Drafts");
             else
                 return getLocalisedFolder(store, "\\Trash");
+        } else {
+            if (folderType.equals(INBOX))
+                return (IMAPFolder) store.getFolder("INBOX");
+            else if (folderType.equals(SENT))
+                return (IMAPFolder) store.getFolder("[Gmail]/Отправленные");
+            else if (folderType.equals(SPAM))
+                return (IMAPFolder) store.getFolder("[Gmail]/Спам");
+            else if (folderType.equals(DRAFT))
+                return (IMAPFolder) store.getFolder("[Gmail]/Черновики");
+            else
+                return (IMAPFolder) store.getFolder("[Gmail]/Корзина");
         }
     }
 
@@ -126,7 +128,7 @@ public class MailUtility {
         for (int i = 0; i < count; i++) {
             BodyPart bodyPart = mimeMultipart.getBodyPart(i);
             String disposition = bodyPart.getDisposition();
-            if (disposition != null && (disposition.equals(BodyPart.ATTACHMENT))) {
+            if (disposition != null && (disposition.toLowerCase().equals(BodyPart.ATTACHMENT))) {
                 list.add(bodyPart.getDataHandler().getName());
             } else {
                 if (bodyPart.isMimeType("text/html")) {
@@ -158,6 +160,6 @@ public class MailUtility {
                 return MailServers.YANDEX;
             }
         }
-        return MailServers.RAMBLER;
+        return null;
     }
 }

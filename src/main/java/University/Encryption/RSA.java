@@ -13,7 +13,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class RSA {
     private static final Logger logger = Logger.getLogger(RSA.class.getName());
 
-    public static void generateKeysRSA(String pathToFolder){
+    public static void generateKeysRSA(String pathToFolder, String user){
         try {
             KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance(RSA_ALG);
             keyPairGenerator.initialize(2048, new SecureRandom());
@@ -21,7 +21,7 @@ public class RSA {
 
             PrivateKey privateKey = keyPair.getPrivate();
             PublicKey publicKey = keyPair.getPublic();
-            writeToFileKeysRSA(pathToFolder, privateKey, publicKey);
+            writeToFileKeysRSA(pathToFolder, privateKey, publicKey, user);
         } catch (NoSuchAlgorithmException e) {
             logger.log(Level.INFO, e.getMessage());
         }
